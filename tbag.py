@@ -8,24 +8,25 @@ kitchen = Room('Kitchen', 'You are in a small kitchen. There is a wood-burning s
 dining_hall.add_connected_room(ballroom, "west", True) # True, to assign opposite door
 dining_hall.add_connected_room(kitchen, "north", True)
 
+
 #for room in Room.get_all_rooms():
 #    room.see_connected_rooms()
-
-
-game_input_text = "Enter next command (or type 'HELP' to see possible commands)"
 
 class GameLogic:
 
     game_input_text = "Enter next command (or type 'HELP' to see possible commands)"
 
-    current_room = ballroom
     game_running = True
+
+    def start(start_room : Room):
+        GameLogic.current_room = start_room
+        GameLogic.run()
 
     def run():
 
         print(GameLogic.current_room.get_description())
         
-        player_input = input(f'{game_input_text} ')
+        player_input = input(f'{GameLogic.game_input_text} ')
         player_input = str.upper(player_input)
 
         input_result = GameLogic.handle_input(player_input)
@@ -78,6 +79,6 @@ class GameLogic:
         else:
             print("There is no door in that direction")
 
-GameLogic.run()
+GameLogic.start(start_room = dining_hall)
 
 
