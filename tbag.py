@@ -8,6 +8,10 @@ kitchen = Room('Kitchen', 'You are in a small kitchen. There is a wood-burning s
 dining_hall.add_connected_room(ballroom, "west", True) # True, to assign opposite door
 dining_hall.add_connected_room(kitchen, "north", True)
 
+# Create people
+
+john = Person('John')
+ballroom.add_person(john)
 
 #for room in Room.get_all_rooms():
 #    room.see_connected_rooms()
