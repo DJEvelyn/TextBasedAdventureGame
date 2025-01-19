@@ -66,20 +66,28 @@ class GameLogic:
 
             if split_input[0] == 'GO':
                 return GameLogic.go_in_direction(split_input[1])
+            
+            if split_input[0] == 'PICKUP':
+                return GameLogic.pickup_item(split_input[1])
 
         print(f'Invalid input')
         return 2
 
     def print_options():
         
-        direction_list = []
+        options_list = []
 
+        # DIRECTIONS
         for direction in GameLogic.current_room.get_valid_directions():
-            direction_list.append(f'GO {str.upper(direction)}')
-        
-        direction_list.append('QUIT')
+            options_list.append(f'GO {str.upper(direction)}')
 
-        print(f'Options: {direction_list}')
+        # ITEMS
+        for item in GameLogic.current_room.get_items():
+            options_list.append(f'PICKUP {str.upper(f'{item}')}')
+
+        options_list.append('QUIT')
+
+        print(f'Options: {options_list}')
 
 
     def go_in_direction(direction : str):
@@ -93,6 +101,21 @@ class GameLogic:
         else:
             print("There is no door in that direction")
             return 2
+        
+    def pickup_item(item_name : str):
+
+        item_name = str.lower(item_name)
+
+        if not (item := GameLogic.current_room.get_item(item_name)) == None:
+            print(f"Picked up {item.get_name()}")
+            GameLogic.current_room.remove_item(item)
+            return 1
+        else:
+            print("No such item")
+            return 2
+
+
+
 
 GameLogic.start(start_room = dining_hall)
 

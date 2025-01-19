@@ -78,6 +78,14 @@ class ItemHolder(ABC):
     
     def get_item_count(self):
         return len(self.get_items())
+
+    def get_item(self, item_name : str) -> Item: # Retrieve item by name
+        
+        for item in self.get_items():
+            if str.lower(item.get_name()) == item_name:
+                return item
+        
+        return None
         
     def get_inventory(self) -> str:
         # Format -> 3 items: Item1, Item2 and Item3.
@@ -122,6 +130,7 @@ class Room(Labeled, ItemHolder):
         self.item_holder_init()
         
         self.connected_rooms = {}
+        self.locked_directions = set()
         self.people = []
 
         Room.all_rooms.append(self) # Keep track of all room objects in Room class
@@ -189,11 +198,24 @@ class Room(Labeled, ItemHolder):
         return self.connected_rooms.keys()
     
     def get_room_in_direction(self, direction):
-
         if direction in self.connected_rooms.keys():
             return self.connected_rooms[direction]
         else:
             return None
+        
+    def lock_direction(self, direction : str) -> Item:
+        
+        # Check if there is a room in that direction
+        if ( given_room := self.get_room_in_direction(direction) ) == None:
+            print(f"No room in that direction for {self.get_name()}")
+            return
+        else:
+            self.locked_directions.add(direction)
+            key_name = f'{self.get_name()} key'
+            key_description = f'A key for the {self.get_name()}\'s {direction} door (to {given_room.get_name()})'
+            key = Key(key_name, key_description)
+            key.assign_key(self, direction)
+            return key 
 
     # STATIC METHODS
 
@@ -208,6 +230,23 @@ class Room(Labeled, ItemHolder):
             opposite_direction_index = (current_direction_index + 2) % len(Room.directions)
             return Room.directions[opposite_direction_index]
     
+
+class Key(Item):
+
+    def __init__(self, name : str, description : str):
+        super().__init__(name, description)
+
+    def assign_key(self, room : Room, direction : str):
+        self.key_room = room
+        self.key_room_direction = direction
+    
+    def check_key(self, room : Room, direction : str):
+        return (self.key_room == room) and (self.key_room_direction == direction)
+    
+
+
+
+
 
 
     
