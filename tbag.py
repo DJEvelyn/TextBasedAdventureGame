@@ -13,6 +13,9 @@ dining_hall.add_connected_room(kitchen, "north", True)
 john = Person('John')
 ballroom.add_person(john)
 
+ball = Item('Ball', 'A spherical object')
+ballroom.add_item(ball)
+
 #for room in Room.get_all_rooms():
 #    room.see_connected_rooms()
 
@@ -31,7 +34,7 @@ class GameLogic:
 
     def run(successful_input : bool = False):
 
-        print('\n', GameLogic.current_room.get_description(), '\n')
+        print('\n', GameLogic.current_room.get_full_description(), '\n')
         
         hint = GameLogic.game_input_text if not successful_input else '>>'
 

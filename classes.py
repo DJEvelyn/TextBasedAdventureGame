@@ -1,34 +1,132 @@
+from abc import ABC, abstractmethod
 
-class Person():
+# ABSTRACT CLASS for neatness. Person, Item and Room have name & description
+class Labeled(ABC):
+
+    @abstractmethod
+    def __init__(self, name : str, description = None):
+        self.labeled_init(name, description)
+
+    """ * """
+    def labeled_init(self, name : str, description = None):
+        self.set_name(name)
+        self.set_description(description)
+    
+    """
+    Work around for multi-inheritence
+    Can't just call super().__init__()
+    """
+
+    # SETTERS
+    def set_name(self, name : str):
+        self.name = name
+    
+    def set_description(self, description : str):
+        self.description = description
+    
+    # GETTERS
+    def get_name(self) -> str:
+        return self.name[:] # Cloned
+    
+    def get_description(self) -> str:
+        return self.description[:] # Cloned
+        
+
+class Item(Labeled):
+
+    def __init__(self, name : str, description = None):
+        self.labeled_init(name, description)
+        
+    # GETTERS
+    def inspect_item(self):
+        if self.description == None:
+            print("This item has no description")
+        else:
+            print(f'{self.description}')
+
+    def __str__(self):
+        return self.name
+
+# ABSTRACT CLASS for neatness. Person and Room share item logic 
+class ItemHolder(ABC):
+
+    @abstractmethod
+    def __init__(self):
+        self.item_holder_init()
+
+    """ * """
+    def item_holder_init(self):
+        self.inventory = []
+    
+    """
+    Work around for multi-inheritence
+    Can't just call super().__init__()
+    """
+    
+    def add_item(self, item : Item):
+        self.inventory.append(item)
+    
+    def remove_item(self, item : Item):
+        if item in self.inventory:
+            self.inventory.remove(item)
+            return True
+        else:
+            return False
+        
+    def get_items(self):
+        return self.inventory[:] # Clone
+    
+    def get_item_count(self):
+        return len(self.get_items())
+        
+    def get_inventory(self) -> str:
+        # Format -> 3 items: Item1, Item2 and Item3.
+        item_count = self.get_item_count()
+
+        if item_count == 0:
+            return 'no items.'
+
+        item_iterator = iter(self.get_items())
+
+        items_message = ''
+
+        while True: # has next
+            try:
+                current_item = next(item_iterator)
+                items_message = f'{items_message} {current_item}'
+            except: # End of iteration
+                items_message = f'{items_message}.' # Add full stop
+                break
+                
+            items_message = f'{items_message},' # On to the next, add comma.
+
+        return f'{item_count} items: {items_message}'
+
+
+class Person(Labeled, ItemHolder):
 
     def __init__(self, name : str):
-        self.name = name
+        self.labeled_init(name)
+        self.item_holder_init()
 
 
-class Room:
+class Room(Labeled, ItemHolder):
 
     all_rooms = []
 
     directions = ['north', 'east', 'south', 'west']
 
     def __init__(self, room_name, description):
-        self.set_name(room_name)
-        self.set_description(description)
+        
+        self.labeled_init(room_name, description)
+        self.item_holder_init()
+        
         self.connected_rooms = {}
         self.people = []
 
         Room.all_rooms.append(self) # Keep track of all room objects in Room class
-    
-    def __str__(self):
-        return self.get_name()
 
     # SETTERS
-    def set_name(self, name):
-        self.name = name
-    
-    def set_description(self, description):
-        self.description = description
-
     def add_connected_room(self, room, direction, two_way = False):
 
         if direction == None:
@@ -54,18 +152,17 @@ class Room:
                     return # Exit method. This would be a clone.
         
         self.people.append(person)
-
         
 
     # GETTERS
-    def get_name(self):
-        return self.name[:]
 
-    def get_description(self):
-        if not self.description == None:
-            return f'{self.description}. {self.get_people_in_room_text()}.'
-        else:
-            return f'{self.get_name()} has no description. {self.get_people_in_room_text()}.'
+    def get_full_description(self) -> str: # Multi-line. Room, People and Items
+        
+        line_one = self.get_description()
+        line_two = self.get_people_in_room_text()
+        line_three = f'The room has {self.get_inventory()}'
+
+        return f'{line_one} \n{line_two} \n{line_three}'
 
     def get_people_in_room(self):
         return self.people[:] # Cloned list
@@ -90,7 +187,6 @@ class Room:
     
     def get_valid_directions(self):
         return self.connected_rooms.keys()
-    
     
     def get_room_in_direction(self, direction):
 
