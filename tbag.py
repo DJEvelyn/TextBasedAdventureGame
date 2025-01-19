@@ -26,6 +26,7 @@ class GameLogic:
     game_running = True
 
     def start(start_room : Room):
+        GameLogic.player = Player()
         GameLogic.current_room = start_room
         GameLogic.run()
 
@@ -61,6 +62,10 @@ class GameLogic:
             GameLogic.print_options()
             return 1
         
+        if input == 'INVENTORY':
+            print(f'\nYou are carrying {GameLogic.player.get_inventory()} \n')
+            return 1
+        
         else:
             split_input = str.split(input)
 
@@ -84,6 +89,9 @@ class GameLogic:
         # ITEMS
         for item in GameLogic.current_room.get_items():
             options_list.append(f'PICKUP {str.upper(f'{item}')}')
+
+
+        options_list.append('INVENTORY')
 
         options_list.append('QUIT')
 
@@ -109,6 +117,7 @@ class GameLogic:
         if not (item := GameLogic.current_room.get_item(item_name)) == None:
             print(f"Picked up {item.get_name()}")
             GameLogic.current_room.remove_item(item)
+            GameLogic.player.add_item(item)
             return 1
         else:
             print("No such item")

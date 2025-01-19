@@ -117,6 +117,10 @@ class Person(Labeled, ItemHolder):
         self.labeled_init(name)
         self.item_holder_init()
 
+class Player(Person):
+
+    def __init__(self):
+        super().__init__('Player')
 
 class Room(Labeled, ItemHolder):
 
