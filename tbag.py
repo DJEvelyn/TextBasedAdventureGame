@@ -74,6 +74,9 @@ class GameLogic:
             
             if split_input[0] == 'PICKUP':
                 return GameLogic.pickup_item(split_input[1])
+            
+            if split_input[0] == 'INSPECT':
+                return GameLogic.inspect_item(split_input[1])
 
         print(f'Invalid input')
         return 2
@@ -89,6 +92,9 @@ class GameLogic:
         # ITEMS
         for item in GameLogic.current_room.get_items():
             options_list.append(f'PICKUP {str.upper(f'{item}')}')
+
+        for item in GameLogic.player.get_items():
+            options_list.append(f'INSPECT {str.upper(f'{item}')}')
 
 
         options_list.append('INVENTORY')
@@ -122,6 +128,19 @@ class GameLogic:
         else:
             print("No such item")
             return 2
+    
+    def inspect_item(item_name : str):
+
+        item_name = str.lower(item_name)
+
+        if not (item := GameLogic.player.get_item(item_name)) == None:
+            print(f'\n{item.get_description()}')
+            return 1
+        else:
+            print("You are not carrying that item")
+            return 2
+
+
 
 
 
