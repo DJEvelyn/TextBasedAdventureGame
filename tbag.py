@@ -16,6 +16,9 @@ ballroom.add_person(john)
 ball = Item('Ball', 'A spherical object')
 ballroom.add_item(ball)
 
+key = dining_hall.lock_direction('west')
+kitchen.add_item(key)
+
 #for room in Room.get_all_rooms():
 #    room.see_connected_rooms()
 
@@ -108,14 +111,16 @@ class GameLogic:
 
         direction = str.lower(direction)
 
-        if (room := GameLogic.current_room.get_room_in_direction(direction) ):
-            print(f'\nYou went through the door to the {direction}')
-            GameLogic.current_room = room
+        can_go_in_direction, message = GameLogic.current_room.can_go_in_direction(GameLogic.player.inventory, direction)
+
+        print(f'\n{message}')
+
+        if can_go_in_direction:
+            GameLogic.current_room = GameLogic.current_room.get_room_in_direction(direction)
             return 1
         else:
-            print("There is no door in that direction")
             return 2
-        
+
     def pickup_item(item_name : str):
 
         item_name = str.lower(item_name)

@@ -201,6 +201,22 @@ class Room(Labeled, ItemHolder):
     def get_valid_directions(self):
         return self.connected_rooms.keys()
     
+    def can_go_in_direction(self, inventory : list[Item], direction : str) -> tuple[bool, str]: # tuple[can_go, message] 
+        if self.check_direction_locked(direction):
+            
+            if key := self.check_valid_key_in_inventory(direction, inventory):
+                return [True, f'You used the {key}']
+            else:
+                return [False, f'The door to the {direction} is locked']
+            
+        elif self.get_room_in_direction(direction) == None:
+
+            return [False, f'There is no room to the {direction}']
+
+        else:
+
+            return [True, f'You go through the door to the {direction}']
+            
     def get_room_in_direction(self, direction):
         if direction in self.connected_rooms.keys():
             return self.connected_rooms[direction]
@@ -215,11 +231,25 @@ class Room(Labeled, ItemHolder):
             return
         else:
             self.locked_directions.add(direction)
-            key_name = f'{self.get_name()} key'
+            key_name = f'Key'
             key_description = f'A key for the {self.get_name()}\'s {direction} door (to {given_room.get_name()})'
             key = Key(key_name, key_description)
             key.assign_key(self, direction)
             return key 
+    
+    def check_direction_locked(self, direction : str) -> bool:
+        return direction in self.locked_directions; 
+
+    def check_valid_key_in_inventory(self, direction, inventory : list[Item]) -> Item:
+        for item in inventory:
+            if not type(item) == Key:
+                continue
+            else: # Try key
+                if item.check_key(self, direction):
+                    return item
+
+        return None
+
 
     # STATIC METHODS
 
