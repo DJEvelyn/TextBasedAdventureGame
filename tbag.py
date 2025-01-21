@@ -80,6 +80,9 @@ class GameLogic:
             
             if split_input[0] == 'INSPECT':
                 return GameLogic.inspect_item(split_input[1])
+            
+            if split_input[0] == 'USE':
+                return GameLogic.start_use_item(split_input[1])
 
         print(f'Invalid input')
         return 2
@@ -98,6 +101,9 @@ class GameLogic:
 
         for item in GameLogic.player.get_items():
             options_list.append(f'INSPECT {str.upper(f'{item}')}')
+        
+        for item in GameLogic.player.get_items():
+            options_list.append(f'USE {str.upper(f'{item}')}')
 
 
         options_list.append('INVENTORY')
@@ -111,7 +117,7 @@ class GameLogic:
 
         direction = str.lower(direction)
 
-        can_go_in_direction, message = GameLogic.current_room.can_go_in_direction(GameLogic.player.inventory, direction)
+        can_go_in_direction, message = GameLogic.current_room.can_go_in_direction(direction)
 
         print(f'\n{message}')
 
@@ -144,10 +150,38 @@ class GameLogic:
         else:
             print("You are not carrying that item")
             return 2
+        
+    def start_use_item(item_name : str):
 
+        item_name = str.lower(item_name)
 
+        if not (item := GameLogic.player.get_item(item_name)) == None:
+            print(f"Use {item.get_name()} on: ")
+            return GameLogic._use_item(item, input(">> "))
+        else:
+            print("You are not carrying that item")
+            return 2
+    
+    def _use_item(item : Item, obstacle_name : str) -> int: # State
 
+        obstacle_name = str.lower(obstacle_name)
 
+        for room_obstacle in GameLogic.current_room.get_obstacles():
+
+            if room_obstacle == None:
+                continue
+
+            if obstacle_name == str.lower(room_obstacle.get_name()):
+                item_works, message = room_obstacle.check_item(item)
+
+                if item_works:
+                    GameLogic.current_room.remove_obstacle(room_obstacle)
+                
+                print(message)
+                return 1
+        
+        print(f'{obstacle_name} is invalid')
+        return 2
 
 
 GameLogic.start(start_room = dining_hall)

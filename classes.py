@@ -30,7 +30,6 @@ class Labeled(ABC):
     
     def get_description(self) -> str:
         return self.description[:] # Cloned
-        
 
 class Item(Labeled):
 
@@ -110,7 +109,6 @@ class ItemHolder(ABC):
 
         return f'{item_count} items: {items_message}'
 
-
 class Person(Labeled, ItemHolder):
 
     def __init__(self, name : str):
@@ -121,6 +119,31 @@ class Player(Person):
 
     def __init__(self):
         super().__init__('Player')
+
+
+class Obstacle(Labeled):
+
+    DEFAULT_RESPONSE = "did not work"
+
+    def __init__(self, solution_item : Item, name : str, description = None):
+        self.labeled_init(name, description)
+        self.solution_item = solution_item
+        self.item_responses = {}
+    
+    # Setters
+    def add_item_reponse(self, item : Item, response : str):
+        self.item_responses[item] = response
+
+    # Getters
+    def get_item_response(self, item : Item):
+        try:
+            return self.item_responses[item]
+        except:
+            return f'{item.get_name()} {Obstacle.DEFAULT_RESPONSE}'
+
+    def check_item(self, item : Item) -> tuple[bool, str]: # True/False of item working, + message
+        return (item == self.solution_item), self.get_item_response(item)
+
 
 class Room(Labeled, ItemHolder):
 
@@ -134,7 +157,11 @@ class Room(Labeled, ItemHolder):
         self.item_holder_init()
         
         self.connected_rooms = {}
-        self.locked_directions = set()
+
+        self.obstacles = {}
+        for direction in Room.directions:
+            self.obstacles[direction] = None
+
         self.people = []
 
         Room.all_rooms.append(self) # Keep track of all room objects in Room class
@@ -165,7 +192,24 @@ class Room(Labeled, ItemHolder):
                     return # Exit method. This would be a clone.
         
         self.people.append(person)
+    
+    def add_obstacle(self, obstacle : Obstacle, *directions : str): # Only one obstacle per direction
+        for direction in directions:
+            self.obstacles[direction] = obstacle
+
+        """
+    def remove_obstacle(self, direction : str):
+        if (obstacle := self.obstacles[direction]) != None:
+            self.obstacles[direction] = None
+        """
+
+    def remove_obstacle(self, obstacle : Obstacle):
+        for entry in self.obstacles.items():
+            if entry[1] == obstacle:
+                obstacle_direction = entry[0]
         
+        self.obstacles[obstacle_direction] = None
+            
 
     # GETTERS
 
@@ -201,27 +245,20 @@ class Room(Labeled, ItemHolder):
     def get_valid_directions(self):
         return self.connected_rooms.keys()
     
-    def can_go_in_direction(self, inventory : list[Item], direction : str) -> tuple[bool, str]: # tuple[can_go, message] 
-        if self.check_direction_locked(direction):
-            
-            if key := self.check_valid_key_in_inventory(direction, inventory):
-                return [True, f'You used the {key}']
-            else:
-                return [False, f'The door to the {direction} is locked']
-            
-        elif self.get_room_in_direction(direction) == None:
-
-            return [False, f'There is no room to the {direction}']
-
+    def can_go_in_direction(self, direction : str) -> tuple[bool, str]: # tuple[can_go, message] 
+        if (obstacle := self.obstacles[direction]) == None:
+            return [True, ""]
         else:
-
-            return [True, f'You go through the door to the {direction}']
+            return [False, f'The {direction} door is blocked by {obstacle.get_description()}']
             
     def get_room_in_direction(self, direction):
         if direction in self.connected_rooms.keys():
             return self.connected_rooms[direction]
         else:
             return None
+    
+    def get_obstacle_in_direction(self, direction):
+        return self.obstacles[direction]
         
     def lock_direction(self, direction : str) -> Item:
         
@@ -230,15 +267,20 @@ class Room(Labeled, ItemHolder):
             print(f"No room in that direction for {self.get_name()}")
             return
         else:
-            self.locked_directions.add(direction)
+            # Create key
             key_name = f'Key'
             key_description = f'A key for the {self.get_name()}\'s {direction} door (to {given_room.get_name()})'
             key = Key(key_name, key_description)
-            key.assign_key(self, direction)
+
+            # Create lock
+            lock = Lock(key)
+
+            self.add_obstacle(lock, direction)
+
             return key 
     
     def check_direction_locked(self, direction : str) -> bool:
-        return direction in self.locked_directions; 
+        return self.can_go_in_direction[0]
 
     def check_valid_key_in_inventory(self, direction, inventory : list[Item]) -> Item:
         for item in inventory:
@@ -249,6 +291,9 @@ class Room(Labeled, ItemHolder):
                     return item
 
         return None
+    
+    def get_obstacles(self) -> list[Obstacle]:
+        return self.obstacles.values()
 
 
     # STATIC METHODS
@@ -264,19 +309,26 @@ class Room(Labeled, ItemHolder):
             opposite_direction_index = (current_direction_index + 2) % len(Room.directions)
             return Room.directions[opposite_direction_index]
     
+class Lock(Obstacle):
+
+    def __init__(self, key : Item):
+        super().__init__(key, "Lock", "a lock with a key-hole")
+        self.add_item_reponse(key, f'The {key.get_name()} works')
+
 
 class Key(Item):
 
     def __init__(self, name : str, description : str):
         super().__init__(name, description)
 
+    """
     def assign_key(self, room : Room, direction : str):
         self.key_room = room
         self.key_room_direction = direction
     
     def check_key(self, room : Room, direction : str):
         return (self.key_room == room) and (self.key_room_direction == direction)
-    
+    """
 
 
 
