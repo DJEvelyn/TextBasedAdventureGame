@@ -20,6 +20,13 @@ ballroom.add_item(ball)
 key = dining_hall.lock_direction('west')
 kitchen.add_item(key)
 
+gold = Item('Gold', 'A satchel of gold coins')
+dining_hall.add_item(gold)
+
+guard = Enemy('Guard', solution_item = gold, description = 'an aggressive looking guard', dialogue = 'None shall pass')
+guard.add_item_reponse(gold, 'This is more than a year\'s pay... some shall pass')
+dining_hall.add_enemy(guard, 'north')
+
 #for room in Room.get_all_rooms():
 #    room.see_connected_rooms()
 

@@ -116,10 +116,13 @@ class Person(Labeled, ItemHolder):
 
     default_response = "doesn't want to talk"
 
-    def __init__(self, name : str):
+    def __init__(self, name : str, dialogue = None):
+        self.person_init(name, dialogue)
+    
+    def person_init(self, name : str, dialogue = None): # for multi-inheritence
         self.labeled_init(name)
         self.item_holder_init()
-        self.dialogue = None
+        self.dialogue = dialogue
     
     def set_dialogue(self, given_dialogue):
         self.dialogue = given_dialogue
@@ -144,6 +147,9 @@ class Obstacle(Labeled):
     DEFAULT_RESPONSE = "did not work"
 
     def __init__(self, solution_item : Item, name : str, description = None):
+        self.obstacle_init(solution_item, name, description)
+
+    def obstacle_init(self, solution_item : Item, name : str, description = None): # For multi-inheritence
         self.labeled_init(name, description)
         self.solution_item = solution_item
         self.item_responses = {}
@@ -161,6 +167,14 @@ class Obstacle(Labeled):
 
     def check_item(self, item : Item) -> tuple[bool, str]: # True/False of item working, + message
         return (item == self.solution_item), self.get_item_response(item)
+
+
+class Enemy(Person, Obstacle):
+
+    def __init__(self, name : str, solution_item : Item, dialogue = None, description = None):
+        self.person_init(name, dialogue)
+        self.obstacle_init(solution_item, name, description)
+
 
 
 class Room(Labeled, ItemHolder):
@@ -215,12 +229,6 @@ class Room(Labeled, ItemHolder):
         for direction in directions:
             self.obstacles[direction] = obstacle
 
-        """
-    def remove_obstacle(self, direction : str):
-        if (obstacle := self.obstacles[direction]) != None:
-            self.obstacles[direction] = None
-        """
-
     def remove_obstacle(self, obstacle : Obstacle):
         for entry in self.obstacles.items():
             if entry[1] == obstacle:
@@ -228,6 +236,11 @@ class Room(Labeled, ItemHolder):
         
         self.obstacles[obstacle_direction] = None
             
+
+    def add_enemy(self, enemy : Enemy, *directions : str):
+        self.add_obstacle(enemy, *directions)
+        self.add_person(enemy)
+
 
     # GETTERS
 
@@ -267,7 +280,7 @@ class Room(Labeled, ItemHolder):
         if (obstacle := self.obstacles[direction]) == None:
             return [True, ""]
         else:
-            return [False, f'The {direction} door is blocked by {obstacle.get_description()}']
+            return [False, f'The {direction} door is blocked by {obstacle.get_description()} - [{obstacle.get_name()}]']
             
     def get_room_in_direction(self, direction):
         if direction in self.connected_rooms.keys():
@@ -330,7 +343,7 @@ class Room(Labeled, ItemHolder):
 class Lock(Obstacle):
 
     def __init__(self, key : Item):
-        super().__init__(key, "Lock", "a lock with a key-hole")
+        super().__init__(key, "Door", "with a lock")
         self.add_item_reponse(key, f'The {key.get_name()} works')
 
 
