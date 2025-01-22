@@ -11,6 +11,7 @@ dining_hall.add_connected_room(kitchen, "north", True)
 # Create people
 
 john = Person('John')
+john.set_dialogue("What are you doing here?")
 ballroom.add_person(john)
 
 ball = Item('Ball', 'A spherical object')
@@ -57,35 +58,45 @@ class GameLogic:
     
     def handle_input(input : str) -> int:
         
-        if input == 'QUIT':
-            print(f'Quitting...')
-            return 0
+        try: # I don't want to resolve each individual potential error case
 
-        if input == 'HELP':
-            GameLogic.print_options()
-            return 1
-        
-        if input == 'INVENTORY':
-            print(f'\nYou are carrying {GameLogic.player.get_inventory()} \n')
-            return 1
-        
-        else:
-            split_input = str.split(input)
+            if input == 'QUIT':
+                print(f'Quitting...')
+                return 0
 
-            if split_input[0] == 'GO':
-                return GameLogic.go_in_direction(split_input[1])
+            if input == 'HELP':
+                GameLogic.print_options()
+                return 1
             
-            if split_input[0] == 'PICKUP':
-                return GameLogic.pickup_item(split_input[1])
+            if input == 'INVENTORY':
+                print(f'\nYou are carrying {GameLogic.player.get_inventory()} \n')
+                return 1
             
-            if split_input[0] == 'INSPECT':
-                return GameLogic.inspect_item(split_input[1])
-            
-            if split_input[0] == 'USE':
-                return GameLogic.start_use_item(split_input[1])
+            else:
+                split_input = str.split(input)
 
-        print(f'Invalid input')
-        return 2
+                if split_input[0] == 'GO':
+                    return GameLogic.go_in_direction(split_input[1])
+                
+                elif split_input[0] == 'PICKUP':
+                    return GameLogic.pickup_item(split_input[1])
+                
+                elif split_input[0] == 'INSPECT':
+                    return GameLogic.inspect_item(split_input[1])
+                
+                elif split_input[0] == 'USE':
+                    return GameLogic.start_use_item(split_input[1])
+                
+                elif split_input[0] == 'TALK':
+                    if split_input[1] == 'TO':
+                        return GameLogic.talk_to_person(split_input[2])
+
+            print(f'Invalid input')
+            return 2
+
+        except:
+            print(f'Invalid input')
+            return 2
 
     def print_options():
         
@@ -104,6 +115,9 @@ class GameLogic:
         
         for item in GameLogic.player.get_items():
             options_list.append(f'USE {str.upper(f'{item}')}')
+
+        for person in GameLogic.current_room.get_people_in_room():
+            options_list.append(f'TALK TO {str.upper(f'{person.get_name()}')}')
 
 
         options_list.append('INVENTORY')
@@ -181,6 +195,19 @@ class GameLogic:
                 return 1
         
         print(f'{obstacle_name} is invalid')
+        return 2
+    
+    def talk_to_person(person_name : str) -> int: # state
+
+        person_name = str.lower(person_name)
+
+        for person in GameLogic.current_room.get_people_in_room():
+
+            if person_name == str.lower( person.get_name() ):
+                print(person.get_dialogue())
+                return 1
+        
+        print('Invalid person name')
         return 2
 
 

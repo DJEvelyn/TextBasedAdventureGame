@@ -17,6 +17,9 @@ class Labeled(ABC):
     Can't just call super().__init__()
     """
 
+    def __str__(self):
+        return self.get_name()
+
     # SETTERS
     def set_name(self, name : str):
         self.name = name
@@ -111,10 +114,25 @@ class ItemHolder(ABC):
 
 class Person(Labeled, ItemHolder):
 
+    default_response = "doesn't want to talk"
+
     def __init__(self, name : str):
         self.labeled_init(name)
         self.item_holder_init()
+        self.dialogue = None
+    
+    def set_dialogue(self, given_dialogue):
+        self.dialogue = given_dialogue
 
+    def get_dialogue(self) -> str:
+        if self.dialogue == None:
+            return f'{self.get_name()} {Person.default_response}'
+        else:
+            return self.dialogue[:]
+        
+    def __str__(self):
+        return self.get_name(); 
+    
 class Player(Person):
 
     def __init__(self):
@@ -221,7 +239,7 @@ class Room(Labeled, ItemHolder):
 
         return f'{line_one} \n{line_two} \n{line_three}'
 
-    def get_people_in_room(self):
+    def get_people_in_room(self) -> list[Person]:
         return self.people[:] # Cloned list
 
     def get_people_in_room_text(self):
@@ -229,7 +247,7 @@ class Room(Labeled, ItemHolder):
 
         if people_count > 0:
             count_text = f'You can see {people_count} people' if  people_count > 1 else f'You can see {people_count} person'
-            return f'{count_text}'
+            return f'{count_text}: {[x.get_name() for x in self.get_people_in_room()]}'
         else:
             return f'There is nobody in the room'
 
