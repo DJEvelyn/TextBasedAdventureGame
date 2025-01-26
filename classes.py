@@ -33,6 +33,22 @@ class Labeled(ABC):
     
     def get_description(self) -> str:
         return self.description[:] # Cloned
+    
+    def display_labeled_list(list : list) -> str:
+
+        items_message = ''
+
+        for i in range(0, length := len(list)):
+            current_label = list[i]
+
+            if (i + 1 >= length):
+                items_message = f'{items_message} {current_label}.'
+            else:
+                items_message = f'{items_message} {current_label},'
+        
+        return f'{items_message}'
+
+
 
 class Item(Labeled):
 
@@ -95,22 +111,10 @@ class ItemHolder(ABC):
 
         if item_count == 0:
             return 'no items.'
+        
+        item_text = 'items' if item_count > 1 else 'item'
 
-        item_iterator = iter(self.get_items())
-
-        items_message = ''
-
-        while True: # has next
-            try:
-                current_item = next(item_iterator)
-                items_message = f'{items_message} {current_item}'
-            except: # End of iteration
-                items_message = f'{items_message}.' # Add full stop
-                break
-                
-            items_message = f'{items_message},' # On to the next, add comma.
-
-        return f'{item_count} items: {items_message}'
+        return f'{item_count} {item_text}: {Labeled.display_labeled_list(self.get_items())}'
 
 class Person(Labeled, ItemHolder):
 
@@ -131,7 +135,7 @@ class Person(Labeled, ItemHolder):
         if self.dialogue == None:
             return f'{self.get_name()} {Person.default_response}'
         else:
-            return self.dialogue[:]
+            return f'{self.get_name()}: "{self.dialogue[:]}"'
         
     def __str__(self):
         return self.get_name(); 
@@ -174,7 +178,6 @@ class Enemy(Person, Obstacle):
     def __init__(self, name : str, solution_item : Item, dialogue = None, description = None):
         self.person_init(name, dialogue)
         self.obstacle_init(solution_item, name, description)
-
 
 
 class Room(Labeled, ItemHolder):
@@ -260,7 +263,7 @@ class Room(Labeled, ItemHolder):
 
         if people_count > 0:
             count_text = f'You can see {people_count} people' if  people_count > 1 else f'You can see {people_count} person'
-            return f'{count_text}: {[x.get_name() for x in self.get_people_in_room()]}'
+            return f'{count_text}: { Labeled.display_labeled_list(self.get_people_in_room()) }'
         else:
             return f'There is nobody in the room'
 

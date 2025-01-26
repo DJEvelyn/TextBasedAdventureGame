@@ -27,6 +27,14 @@ guard = Enemy('Guard', solution_item = gold, description = 'an aggressive lookin
 guard.add_item_reponse(gold, 'This is more than a year\'s pay... some shall pass')
 dining_hall.add_enemy(guard, 'north')
 
+
+test_list = []
+test_list.append(key)
+test_list.append(guard)
+test_list.append(john)
+
+print(f'Labeled list print {Labeled.display_labeled_list(test_list)}')
+
 #for room in Room.get_all_rooms():
 #    room.see_connected_rooms()
 
@@ -39,15 +47,18 @@ class GameLogic:
     def start(start_room : Room):
         GameLogic.player = Player()
         GameLogic.current_room = start_room
-        GameLogic.run()
+        GameLogic.run(first_run = True)
 
-    # Run codes. Return 0 == Quit, 1 == Continue, 2 == Invalid Input
+    # Run codes. Return 0 == Quit, 1 == Continue, 2 == Invalid Input, 3 == First Run
     # These are returned by player_input
 
-    def run(successful_input : bool = False):
-
-        print('\n', GameLogic.current_room.get_full_description(), '\n')
+    def run(first_run : bool = False, successful_input : bool = False):
         
+        if (first_run):
+            print('\n Welcome to the Text Based Adventure Game')
+            print('\n You awaken in a mysterious room')
+            GameLogic.print_room_description()
+
         hint = GameLogic.game_input_text if not successful_input else '>>'
 
         player_input = input(f'{hint} ')
@@ -58,9 +69,9 @@ class GameLogic:
         if (input_result == 0): # Quit command sent
             return
         elif (input_result == 1): # Input was successful
-            GameLogic.run(True) # Run without re-hinting
+            GameLogic.run(successful_input = True) # Run without re-hinting
         else:
-            GameLogic.run(False) # Run with hinting
+            GameLogic.run(successful_input = False) # Run with hinting
 
     
     def handle_input(input : str) -> int:
@@ -77,6 +88,10 @@ class GameLogic:
             
             if input == 'INVENTORY':
                 print(f'\nYou are carrying {GameLogic.player.get_inventory()} \n')
+                return 1
+            
+            if input == 'LOOK':
+                GameLogic.print_room_description()
                 return 1
             
             else:
@@ -108,6 +123,8 @@ class GameLogic:
     def print_options():
         
         options_list = []
+
+        options_list.append('LOOK')
 
         # DIRECTIONS
         for direction in GameLogic.current_room.get_valid_directions():
@@ -144,6 +161,7 @@ class GameLogic:
 
         if can_go_in_direction:
             GameLogic.current_room = GameLogic.current_room.get_room_in_direction(direction)
+            GameLogic.print_room_description()
             return 1
         else:
             return 2
@@ -216,6 +234,9 @@ class GameLogic:
         
         print('Invalid person name')
         return 2
+    
+    def print_room_description():
+        print('\n', GameLogic.current_room.get_full_description(), '\n')
 
 
 GameLogic.start(start_room = dining_hall)
