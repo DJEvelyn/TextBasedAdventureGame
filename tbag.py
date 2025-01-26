@@ -1,50 +1,83 @@
 from classes import *
 
-dining_hall = Room("Dining Hall", 'You can see a large table in the center of the room')
-ballroom = Room('Ballroom', 'There is a large chandelier dangling from the ceiling')
-kitchen = Room('Kitchen', 'You are in a small kitchen. There is a wood-burning stove')
+# ROOMS
+
+entrance_hall = Room("Entrance Hall", "A grand foyer with ornate decorations and an exit to the south")
+dining_hall = Room("Dining Hall", "A large room with a long dining table set for a feast.")
+ballroom = Room("Ballroom", "A grand room with crystal chandeliers and polished floors.")
+kitchen = Room("Kitchen", "Well-equipped with a variety of cooking tools.")
+library = Room("Library", 'A cozy room filled with bookshelves and ... a high window.')
+office = Room("Office", 'A mystical chamber with shimmering scrolls and a crystal desk radiating an ethereal glow.')
+outdoors = Room("Outdoors", " ")
 
 
-dining_hall.add_connected_room(ballroom, "west", True) # True, to assign opposite door
-dining_hall.add_connected_room(kitchen, "north", True)
+entrance_hall.add_connected_room(dining_hall, 'north', True)
+dining_hall.add_connected_room(kitchen, 'north', True)
+ballroom.add_connected_room(dining_hall, 'east', True)
+library.add_connected_room(dining_hall, 'west', True)
+outdoors.add_connected_room(entrance_hall, 'north', True)
+office.add_connected_room(library, 'west', True)
 
-# Create people
 
-book = Item('Book', 'A dusty, old book')
+# ITEMS
 
-john = Ally('John', book)
-john.set_dialogue("You will need this.")
-john.set_gave_item_dialogue("Good luck. The book is the key.")
-ballroom.add_person(john)
+key = entrance_hall.lock_direction('south')
+gold = Item('Gold', 'A small satchel of gold coins. A decent amount for a bribe.')
+ball = Item('Ball', 'A spherical object. Perfectly so, on second glance.')
+knife = Item('Knife', 'A dull butterknife.')
+book = Item('Book', 'A book covered in dust. It hasn\'t been read in years')
 
-ball = Item('Ball', 'A spherical object')
+#rocks = Item('Rocks', 'A satchel of rocks')
+#dining_hall.add_item(rocks)
+
+
+# People
+
+# Allies
+stranger = Ally('Stranger', gold)
+stranger.set_dialogue('You\'ll be needing this')
+stranger.set_gave_item_dialogue('Some are more loyal to gold')
+stranger.set_description('A mysterious figure')
+
+# Enemies
+chef = Enemy('Chef', gold, 'Nobody gets into my kitchen', 'a chef in full-attire', 'Some people get into my kitchen')
+chef.set_description('A chef in full-attire')
+chef.add_item_response(gold, 'You\'re right, I am underpaid. *You hand the satchel to the chef*', True, '*The chef steps aside*')
+chef.add_item_response(ball, 'I don\'t have time for games')
+chef.add_item_response(book, 'It doesn\'t look like a recipe book to me')
+
+guard = Enemy('Guard', book, 'It is my duty to guard the library', 'a fearsome looking guard', 'Please take the book to the library')
+guard.add_item_response(book, 'Ah, you must have business here. *The guard steps aside*')
+guard.add_fail_item(ball, 'You mock me!? *The guard raises his sword *')
+guard.add_fail_item(knife, 'Ah! Then it is a duel. *The guard raises his sword*')
+guard.add_item_response(gold, 'You cannot bribe a guard of my standing')
+
+librarian = Enemy('Librarian', book, 'Now where has it gone...', 'a librarian, slender and wearing spectacles', 'I appreciate the help. Please, see yourself out.')
+librarian.add_item_response(book, 'Just what I was looking for', True, '*The librarian takes the book*')
+librarian.add_item_response(knife, 'Is that supposed to be intimidating?')
+
+'''
+Butler
+Ghost
+
+'''
+
+# Assign people
+
+ballroom.add_person(stranger)
+dining_hall.add_enemy(chef, 'north')
+library.add_enemy(librarian, 'east')
+dining_hall.add_enemy(guard, 'east')
+
+
+# Assign items
+
+office.add_item(key)
 ballroom.add_item(ball)
+kitchen.add_item(knife)
+kitchen.add_item(book)
 
-key = dining_hall.lock_direction('west')
-kitchen.add_item(key)
 
-rocks = Item('Rocks', 'A satchel of rocks')
-dining_hall.add_item(rocks)
-
-gold = Item('Gold', 'A satchel of gold coins')
-dining_hall.add_item(gold)
-
-guard = Enemy('Guard', solution_item = gold, description = 'an aggressive looking guard', dialogue = 'None shall pass')
-guard.add_item_reponse(gold, 'This is more than a year\'s pay... some shall pass', True, 'Welp, you can\'t take it with you')
-dining_hall.add_enemy(guard, 'north')
-
-guard.set_solved_dialogue('Be on your way')
-guard.add_fail_item(rocks, 'Now we\'re talking... wait a minute. *The Guard raises his sword* ')
-
-test_list = []
-test_list.append(key)
-test_list.append(guard)
-test_list.append(john)
-
-print(f'Labeled list print {Labeled.display_labeled_list(test_list)}')
-
-#for room in Room.get_all_rooms():
-#    room.see_connected_rooms()
 
 class GameLogic:
 
@@ -52,9 +85,10 @@ class GameLogic:
 
     game_running = True
 
-    def start(start_room : Room):
+    def start(start_room : Room, target_room : Room):
         GameLogic.player = Player()
         GameLogic.current_room = start_room
+        GameLogic.target_room = target_room
         GameLogic.run(first_run = True)
 
     # Run codes. Return 0 == Quit, 1 == Continue, 2 == Invalid Input, 3 == First Run
@@ -66,6 +100,10 @@ class GameLogic:
             print('\n Welcome to the Text Based Adventure Game')
             print('\n You awaken in a mysterious room')
             GameLogic.print_room_description()
+
+        if GameLogic.current_room == GameLogic.target_room:
+            GameLogic.game_won()
+            return
 
         hint = GameLogic.game_input_text if not successful_input else '>>'
 
@@ -325,10 +363,14 @@ class GameLogic:
     def print_room_description():
         print('\n', GameLogic.current_room.get_full_description(), '\n')
     
+    def game_won():
+        print('\nYou have made it outside!')
+        GameLogic.game_over()
+
     def game_over():
         print("\n GAME OVER! \n")
 
 
-GameLogic.start(start_room = dining_hall)
+GameLogic.start(start_room = entrance_hall, target_room = outdoors)
 
 

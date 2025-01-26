@@ -191,7 +191,7 @@ class Obstacle(Labeled):
         self.item_destroyed = {}
     
     # Setters
-    def add_item_reponse(self, item : Item, response : str, destroys_item : bool = False, destroy_message : str = None):
+    def add_item_response(self, item : Item, response : str, destroys_item : bool = False, destroy_message : str = None):
         self.item_responses[item] = response
         
         if destroys_item:
@@ -356,6 +356,10 @@ class Room(Labeled, ItemHolder):
         return self.connected_rooms.keys()
     
     def can_go_in_direction(self, direction : str) -> tuple[bool, str]: # tuple[can_go, message] 
+        
+        if self.get_room_in_direction(direction) == None:
+            return [False, 'There is no door in that direction']
+        
         if (obstacle := self.obstacles[direction]) == None:
             return [True, ""]
         else:
@@ -426,7 +430,7 @@ class Lock(Obstacle):
 
     def __init__(self, key : Item):
         super().__init__(key, "Door", "with a lock")
-        self.add_item_reponse(key, f'The {key.get_name()} works', True, 'You leave the key in the door')
+        self.add_item_response(key, f'The {key.get_name()} works', True, 'You leave the key in the door')
 
 
 class Key(Item):
