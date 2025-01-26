@@ -30,6 +30,7 @@ guard = Enemy('Guard', solution_item = gold, description = 'an aggressive lookin
 guard.add_item_reponse(gold, 'This is more than a year\'s pay... some shall pass', True, 'Welp, you can\'t take it with you')
 dining_hall.add_enemy(guard, 'north')
 
+guard.set_solved_dialogue('Be on your way')
 guard.add_fail_item(rocks, 'Now we\'re talking... wait a minute. *The Guard raises his sword* ')
 
 test_list = []
@@ -257,6 +258,7 @@ class GameLogic:
 
                 if item_works:
                     GameLogic.current_room.remove_obstacle(room_obstacle)
+                    room_obstacle.set_solved()
 
                 print(message)
 
@@ -266,7 +268,7 @@ class GameLogic:
 
                 return 1
         
-        print(f'{obstacle_name} is invalid')
+        print(f'{obstacle_name} is not a valid obstacle name')
         return 2
     
     def talk_to_person(person_name : str) -> int: # state

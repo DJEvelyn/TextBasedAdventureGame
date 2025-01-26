@@ -155,6 +155,7 @@ class Obstacle(Labeled):
 
     def obstacle_init(self, solution_item : Item, name : str, description = None): # For multi-inheritence
         self.labeled_init(name, description)
+        self.solved_state = False
         self.solution_item = solution_item
         self.item_responses = {}
         self.item_destroyed = {}
@@ -184,17 +185,24 @@ class Obstacle(Labeled):
         
         return (item == self.solution_item), self._get_item_response(item), \
         destroy_tuple[0], destroy_tuple[1]
+
+    def set_solved(self):
+        self.solved_state = True
         
 
 
 
 class Enemy(Person, Obstacle):
 
-    def __init__(self, name : str, solution_item : Item, dialogue = None, description = None):
+    def __init__(self, name : str, solution_item : Item, dialogue = None, description = None, solved_dialogue = None):
         self.person_init(name, dialogue)
         self.obstacle_init(solution_item, name, description)
 
         self.fail_items = {}
+        self.solved_dialogue = solved_dialogue
+
+    def set_solved_dialogue(self, solved_dialogue : str):
+        self.solved_dialogue = solved_dialogue
 
     def add_fail_item(self, item : Item, message : str):
 
@@ -210,6 +218,12 @@ class Enemy(Person, Obstacle):
             return True, self.fail_items[item]
         else:
             return False, "[Not a fail item]"
+        
+    def set_solved(self):
+        self.solved_state = True
+
+        if self.solved_dialogue != None:
+            self.set_dialogue(self.solved_dialogue)
 
 
 class Room(Labeled, ItemHolder):
