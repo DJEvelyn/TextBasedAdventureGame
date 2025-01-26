@@ -20,6 +20,9 @@ ballroom.add_item(ball)
 key = dining_hall.lock_direction('west')
 kitchen.add_item(key)
 
+rocks = Item('Rocks', 'A satchel of rocks')
+dining_hall.add_item(rocks)
+
 gold = Item('Gold', 'A satchel of gold coins')
 dining_hall.add_item(gold)
 
@@ -27,7 +30,7 @@ guard = Enemy('Guard', solution_item = gold, description = 'an aggressive lookin
 guard.add_item_reponse(gold, 'This is more than a year\'s pay... some shall pass', True, 'Welp, you can\'t take it with you')
 dining_hall.add_enemy(guard, 'north')
 
-print(guard.check_item(gold))
+guard.add_fail_item(rocks, 'Now we\'re talking... wait a minute. *The Guard raises his sword* ')
 
 test_list = []
 test_list.append(key)
@@ -71,8 +74,10 @@ class GameLogic:
             return
         elif (input_result == 1): # Input was successful
             GameLogic.run(successful_input = True) # Run without re-hinting
-        else:
+        elif (input_result == 2):
             GameLogic.run(successful_input = False) # Run with hinting
+        else:
+            GameLogic.game_over(); 
 
     
     def handle_input(input : str) -> int:
@@ -108,7 +113,11 @@ class GameLogic:
                     return GameLogic.inspect_item(split_input[1])
                 
                 elif split_input[0] == 'USE':
-                    return GameLogic.start_use_item(split_input[1])
+                    try:
+                        if split_input[2] == 'ON': # i.e. 'USE item ON obstacle' entered
+                            return GameLogic.start_use_item(split_input[1], split_input[3])
+                    except:
+                        return GameLogic.start_use_item(split_input[1])
                 
                 elif split_input[0] == 'TALK':
                     if split_input[1] == 'TO':
@@ -191,7 +200,7 @@ class GameLogic:
             print("You are not carrying that item")
             return 2
         
-    def start_use_item(item_name : str) -> int:
+    def start_use_item(item_name : str, obstacle_name = None) -> int:
 
         '''
         Returns int value: 1 (Valid Item), 2 (Invalid Item)
@@ -200,8 +209,12 @@ class GameLogic:
         item_name = str.lower(item_name)
 
         if not (item := GameLogic.player.get_item(item_name)) == None:
-            print(f"Use {item.get_name()} on: ")
-            return GameLogic._use_item(item, input(">> "))
+
+            if not obstacle_name == None:
+                return GameLogic._use_item(item, obstacle_name)
+            else:
+                print(f"Use {item.get_name()} on: ")
+                return GameLogic._use_item(item, input(">> "))
         else:
             print("You are not carrying that item")
             return 2
@@ -218,6 +231,14 @@ class GameLogic:
 
             if room_obstacle == None:
                 continue
+
+            # Handle enemy fail
+            if type(room_obstacle) == Enemy:
+                fail_check = room_obstacle.check_fail(item)
+
+                if fail_check[0] == True:
+                    print (fail_check[1])
+                    return 3
 
             if obstacle_name == str.lower(room_obstacle.get_name()):
                 item_works, message, item_destroyed, destroy_message \
@@ -258,8 +279,7 @@ class GameLogic:
         print('\n', GameLogic.current_room.get_full_description(), '\n')
     
     def game_over():
-        print("\n\n GAME OVER")
-        quit()
+        print("\n GAME OVER! \n")
 
 
 GameLogic.start(start_room = dining_hall)

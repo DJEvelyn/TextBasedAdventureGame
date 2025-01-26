@@ -194,6 +194,23 @@ class Enemy(Person, Obstacle):
         self.person_init(name, dialogue)
         self.obstacle_init(solution_item, name, description)
 
+        self.fail_items = {}
+
+    def add_fail_item(self, item : Item, message : str):
+
+        if item == self.solution_item:
+            print('Invalid. Fail item cannot be solution item')
+            return
+
+        self.fail_items[item] = message
+    
+    def check_fail(self, item : Item) -> tuple[bool, str]: # Fail status and fail message
+
+        if (item in self.fail_items.keys()):
+            return True, self.fail_items[item]
+        else:
+            return False, "[Not a fail item]"
+
 
 class Room(Labeled, ItemHolder):
 
