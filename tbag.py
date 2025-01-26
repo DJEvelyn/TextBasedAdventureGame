@@ -270,8 +270,13 @@ class GameLogic:
                     print(destroy_message)
 
                 return 1
+            
+        for person in GameLogic.current_room.get_people_in_room():
+            if str.lower(person.get_name()) == obstacle_name:
+                print(f'{str.upper(obstacle_name)} is not an obstacle')
+                return 2
         
-        print(f'{obstacle_name} is not a valid obstacle name')
+        print(f'There is not obstacle called {obstacle_name}')
         return 2
     
     def talk_to_person(person_name : str) -> int: # state

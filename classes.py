@@ -426,7 +426,7 @@ class Lock(Obstacle):
 
     def __init__(self, key : Item):
         super().__init__(key, "Door", "with a lock")
-        self.add_item_reponse(key, f'The {key.get_name()} works')
+        self.add_item_reponse(key, f'The {key.get_name()} works', True, 'You leave the key in the door')
 
 
 class Key(Item):
