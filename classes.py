@@ -157,20 +157,35 @@ class Obstacle(Labeled):
         self.labeled_init(name, description)
         self.solution_item = solution_item
         self.item_responses = {}
+        self.item_destroyed = {}
     
     # Setters
-    def add_item_reponse(self, item : Item, response : str):
+    def add_item_reponse(self, item : Item, response : str, destroys_item : bool = False, destroy_message : str = None):
         self.item_responses[item] = response
+        
+        if destroys_item:
+            self.item_destroyed[item] = f'{item.get_name()} was destroyed' if destroy_message == None else destroy_message; 
 
     # Getters
-    def get_item_response(self, item : Item):
+    def _get_item_response(self, item : Item):
         try:
             return self.item_responses[item]
         except:
             return f'{item.get_name()} {Obstacle.DEFAULT_RESPONSE}'
+    
+    def _get_destroy_item_response(self, item : Item):
+        if item in self.item_destroyed.keys():
+            return True, self.item_destroyed[item]
+        else:
+            return False, "[Item was not destroyed]"
 
-    def check_item(self, item : Item) -> tuple[bool, str]: # True/False of item working, + message
-        return (item == self.solution_item), self.get_item_response(item)
+    def check_item(self, item : Item) -> tuple[bool, str, bool, str]: # True/False of item working, + message
+        destroy_tuple = self._get_destroy_item_response(item)
+        
+        return (item == self.solution_item), self._get_item_response(item), \
+        destroy_tuple[0], destroy_tuple[1]
+        
+
 
 
 class Enemy(Person, Obstacle):

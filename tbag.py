@@ -24,9 +24,10 @@ gold = Item('Gold', 'A satchel of gold coins')
 dining_hall.add_item(gold)
 
 guard = Enemy('Guard', solution_item = gold, description = 'an aggressive looking guard', dialogue = 'None shall pass')
-guard.add_item_reponse(gold, 'This is more than a year\'s pay... some shall pass')
+guard.add_item_reponse(gold, 'This is more than a year\'s pay... some shall pass', True, 'Welp, you can\'t take it with you')
 dining_hall.add_enemy(guard, 'north')
 
+print(guard.check_item(gold))
 
 test_list = []
 test_list.append(key)
@@ -190,7 +191,11 @@ class GameLogic:
             print("You are not carrying that item")
             return 2
         
-    def start_use_item(item_name : str):
+    def start_use_item(item_name : str) -> int:
+
+        '''
+        Returns int value: 1 (Valid Item), 2 (Invalid Item)
+        '''
 
         item_name = str.lower(item_name)
 
@@ -203,6 +208,10 @@ class GameLogic:
     
     def _use_item(item : Item, obstacle_name : str) -> int: # State
 
+        '''
+        Returns int value: 1 (Valid Obstacle), 2 (Invalid Obstacle)
+        '''
+
         obstacle_name = str.lower(obstacle_name)
 
         for room_obstacle in GameLogic.current_room.get_obstacles():
@@ -211,18 +220,28 @@ class GameLogic:
                 continue
 
             if obstacle_name == str.lower(room_obstacle.get_name()):
-                item_works, message = room_obstacle.check_item(item)
+                item_works, message, item_destroyed, destroy_message \
+                      = room_obstacle.check_item(item)
 
                 if item_works:
                     GameLogic.current_room.remove_obstacle(room_obstacle)
-                
+
                 print(message)
+
+                if item_destroyed:
+                    GameLogic.player.remove_item(item)
+                    print(destroy_message)
+
                 return 1
         
         print(f'{obstacle_name} is invalid')
         return 2
     
     def talk_to_person(person_name : str) -> int: # state
+
+        '''
+        Returns int value: 1 (Valid Person), 2 (Invalid Person)
+        '''
 
         person_name = str.lower(person_name)
 
@@ -237,6 +256,10 @@ class GameLogic:
     
     def print_room_description():
         print('\n', GameLogic.current_room.get_full_description(), '\n')
+    
+    def game_over():
+        print("\n\n GAME OVER")
+        quit()
 
 
 GameLogic.start(start_room = dining_hall)
