@@ -360,6 +360,9 @@ class Room(Labeled, ItemHolder):
     
     def get_obstacles(self) -> list[Obstacle]:
         return self.obstacles.values()
+    
+    def get_enemies(self) -> list[Enemy]:
+        return [x for x in self.get_obstacles() if type(x) == Enemy]
 
 
     # STATIC METHODS

@@ -122,6 +122,14 @@ class GameLogic:
                 elif split_input[0] == 'TALK':
                     if split_input[1] == 'TO':
                         return GameLogic.talk_to_person(split_input[2])
+                    
+                elif split_input[0] == 'CONFRONT' or split_input[0] == 'FIGHT':
+                    try:
+                        if split_input[2] == 'WITH': # i.e. 'CONFRONT enemy WITH item'
+                            return GameLogic.confront_enemy(split_input[1], split_input[3])
+                    except:
+                        return GameLogic.confront_enemy(split_input[1])
+
 
             print(f'Invalid input')
             return 2
@@ -152,6 +160,9 @@ class GameLogic:
 
         for person in GameLogic.current_room.get_people_in_room():
             options_list.append(f'TALK TO {str.upper(f'{person.get_name()}')}')
+        
+        for enemy in GameLogic.current_room.get_enemies():
+            options_list.append(f'CONFRONT {str.upper(enemy.get_name())}')
 
 
         options_list.append('INVENTORY')
@@ -275,6 +286,26 @@ class GameLogic:
         print('Invalid person name')
         return 2
     
+    def confront_enemy(enemy_name : str, item_name : str = None):
+
+        # Re-using use item implementation
+        enemy_name_valid = False
+
+        for enemy in GameLogic.current_room.get_enemies():
+            if str.upper (enemy.get_name()) == enemy_name:
+                enemy_name_valid = True
+
+        if not enemy_name_valid:
+            print("Invalid enemy name")
+            return 2
+
+        if item_name == None:
+            print(f"Confront {enemy_name} with: ")
+            return GameLogic.start_use_item(input(">> "), enemy_name)
+        else:
+            return GameLogic.start_use_item(item_name, enemy_name)
+
+
     def print_room_description():
         print('\n', GameLogic.current_room.get_full_description(), '\n')
     
