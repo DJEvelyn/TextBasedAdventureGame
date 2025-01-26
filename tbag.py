@@ -27,11 +27,6 @@ ball = Item('Ball', 'A spherical object. Perfectly so, on second glance.')
 knife = Item('Knife', 'A dull butterknife.')
 book = Item('Book', 'A book covered in dust. It hasn\'t been read in years')
 
-#rocks = Item('Rocks', 'A satchel of rocks')
-#dining_hall.add_item(rocks)
-
-
-# People
 
 # Allies
 stranger = Ally('Stranger', gold)
@@ -55,12 +50,6 @@ guard.add_item_response(gold, 'You cannot bribe a guard of my standing')
 librarian = Enemy('Librarian', book, 'Now where has it gone...', 'a librarian, slender and wearing spectacles', 'I appreciate the help. Please, see yourself out.')
 librarian.add_item_response(book, 'Just what I was looking for', True, '*The librarian takes the book*')
 librarian.add_item_response(knife, 'Is that supposed to be intimidating?')
-
-'''
-Butler
-Ghost
-
-'''
 
 # Assign people
 
@@ -161,6 +150,13 @@ class GameLogic:
                     except:
                         return GameLogic.start_use_item(split_input[1])
                 
+                elif split_input[0] == 'GIVE':
+                    try:
+                        if split_input[2] == 'TO': # i.e. 'GIVE item TO obstacle' entered
+                            return GameLogic.start_use_item(split_input[1], split_input[3])
+                    except:
+                        return GameLogic.start_use_item(split_input[1], give_command = True)
+                
                 elif split_input[0] == 'TALK':
                     if split_input[1] == 'TO':
                         return GameLogic.talk_to_person(split_input[2])
@@ -253,7 +249,7 @@ class GameLogic:
             print("You are not carrying that item")
             return 2
         
-    def start_use_item(item_name : str, obstacle_name = None) -> int:
+    def start_use_item(item_name : str, obstacle_name = None, give_command = False) -> int:
 
         '''
         Returns int value: 1 (Valid Item), 2 (Invalid Item)
@@ -266,7 +262,9 @@ class GameLogic:
             if not obstacle_name == None:
                 return GameLogic._use_item(item, obstacle_name)
             else:
-                print(f"Use {item.get_name()} on: ")
+
+                message = f'Use {item.get_name()} on: ' if not give_command else f'Give {item.get_name()} to: '
+                print(message)
                 return GameLogic._use_item(item, input(">> "))
         else:
             print("You are not carrying that item")

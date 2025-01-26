@@ -384,7 +384,7 @@ class Room(Labeled, ItemHolder):
             # Create key
             key_name = f'Key'
             key_description = f'A key for the {self.get_name()}\'s {direction} door (to {given_room.get_name()})'
-            key = Key(key_name, key_description)
+            key = Item(key_name, key_description)
 
             # Create lock
             lock = Lock(key)
@@ -392,19 +392,6 @@ class Room(Labeled, ItemHolder):
             self.add_obstacle(lock, direction)
 
             return key 
-    
-    def check_direction_locked(self, direction : str) -> bool:
-        return self.can_go_in_direction[0]
-
-    def check_valid_key_in_inventory(self, direction, inventory : list[Item]) -> Item:
-        for item in inventory:
-            if not type(item) == Key:
-                continue
-            else: # Try key
-                if item.check_key(self, direction):
-                    return item
-
-        return None
     
     def get_obstacles(self) -> list[Obstacle]:
         return self.obstacles.values()
@@ -431,24 +418,6 @@ class Lock(Obstacle):
     def __init__(self, key : Item):
         super().__init__(key, "Door", "with a lock")
         self.add_item_response(key, f'The {key.get_name()} works', True, 'You leave the key in the door')
-
-
-class Key(Item):
-
-    def __init__(self, name : str, description : str):
-        super().__init__(name, description)
-
-    """
-    def assign_key(self, room : Room, direction : str):
-        self.key_room = room
-        self.key_room_direction = direction
-    
-    def check_key(self, room : Room, direction : str):
-        return (self.key_room == room) and (self.key_room_direction == direction)
-    """
-
-
-
 
 
 
