@@ -10,8 +10,11 @@ dining_hall.add_connected_room(kitchen, "north", True)
 
 # Create people
 
-john = Person('John')
-john.set_dialogue("What are you doing here?")
+book = Item('Book', 'A dusty, old book')
+
+john = Ally('John', book)
+john.set_dialogue("You will need this.")
+john.set_gave_item_dialogue("Good luck. The book is the key.")
 ballroom.add_person(john)
 
 ball = Item('Ball', 'A spherical object')
@@ -283,6 +286,12 @@ class GameLogic:
 
             if person_name == str.lower( person.get_name() ):
                 print(person.get_dialogue())
+
+                if type(person) == Ally:
+                    if not (gift_item := person.get_gift_item()) == None:
+                        print(f'Received {gift_item.get_name()} from {person.get_name()}')
+                        GameLogic.player.add_item(gift_item)
+
                 return 1
         
         print('Invalid person name')

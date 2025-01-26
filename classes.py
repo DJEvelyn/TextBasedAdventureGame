@@ -145,6 +145,36 @@ class Player(Person):
     def __init__(self):
         super().__init__('Player')
 
+class Ally(Person):
+
+    def __init__(self, name : str, gift_item : Item):
+        
+        if gift_item == None:
+            print('Allies must have a gift item')
+            return 
+
+        super().__init__(name)
+        self.gift_item = gift_item
+    
+    def set_gave_item_dialogue(self, gave_item_dialogue : str):
+        self.gave_item_dialogue = gave_item_dialogue
+
+    
+    def get_gift_item(self):
+        
+        if self.gift_item == None:
+            return None
+        
+        outbound_gift = self.gift_item
+        self.gift_item = None
+        
+        if not self.gave_item_dialogue == None:
+            self.set_dialogue(self.gave_item_dialogue)
+
+        return outbound_gift
+        
+
+
 
 class Obstacle(Labeled):
 
