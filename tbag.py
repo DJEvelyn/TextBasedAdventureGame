@@ -285,6 +285,9 @@ class GameLogic:
             if room_obstacle == None:
                 continue
 
+            if not obstacle_name == str.lower(room_obstacle.get_name()):
+                continue
+
             # Handle enemy fail
             if type(room_obstacle) == Enemy:
                 fail_check = room_obstacle.check_fail(item)
@@ -293,21 +296,20 @@ class GameLogic:
                     print (fail_check[1])
                     return 3
 
-            if obstacle_name == str.lower(room_obstacle.get_name()):
-                item_works, message, item_destroyed, destroy_message \
+            item_works, message, item_destroyed, destroy_message \
                       = room_obstacle.check_item(item)
 
-                if item_works:
-                    GameLogic.current_room.remove_obstacle(room_obstacle)
-                    room_obstacle.set_solved()
+            if item_works:
+                GameLogic.current_room.remove_obstacle(room_obstacle)
+                room_obstacle.set_solved()
 
-                print(message)
+            print(message)
 
-                if item_destroyed:
-                    GameLogic.player.remove_item(item)
-                    print(destroy_message)
+            if item_destroyed:
+                GameLogic.player.remove_item(item)
+                print(destroy_message)
 
-                return 1
+            return 1
             
         for person in GameLogic.current_room.get_people_in_room():
             if str.lower(person.get_name()) == obstacle_name:
